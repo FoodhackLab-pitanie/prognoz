@@ -175,6 +175,7 @@ h2{font:400 clamp(26px,7.4vw,34px)/1.1 var(--f-display);margin:0;text-wrap:balan
       <h2 class="title gold-text" id="r-title"></h2>
       <p id="r-text"></p>
     </div>
+    <div id="r-pct" class="vsfriend" hidden></div>
     <div id="r-friend" class="vsfriend" hidden></div>
     <div class="actions">
       <button class="btn" id="b-challenge">Бросить вызов другу</button>
@@ -227,6 +228,22 @@ const friend = (() => {
   const v = parseInt(new URLSearchParams(location.search).get('r'), 10);
   return Number.isInteger(v) && v>=0 && v<=10 ? v : null;
 })();
+/* Счётчик: бесплатный сервис Abacus. Если он не отвечает, игра работает как обычно. */
+const STATS='https://abacus.jasoncameron.dev', NS='foodhacklab-ugaday';
+function api(kind,key){
+  const c=new AbortController(); const t=setTimeout(()=>c.abort(),4000);
+  return fetch(`${STATS}/${kind}/${NS}/${key}`,{signal:c.signal,cache:'no-store'})
+    .then(r=>r.ok?r.json():{value:0}).then(j=>Number(j.value)||0).catch(()=>null).finally(()=>clearTimeout(t));
+}
+const hit = key => api('hit',key);
+async function percentile(my){
+  const vals=await Promise.all(Array.from({length:11},(_,i)=>api('get','s'+i)));
+  if (vals.some(v=>v===null)) return null;
+  const total=vals.reduce((a,b)=>a+b,0); if (total<30) return null;
+  const below=vals.slice(0,my).reduce((a,b)=>a+b,0);
+  return {pct:Math.round(below/total*100), total};
+}
+if (friend !== null) hit('from-challenge');
 if (friend !== null) {
   const c=$('#challenge'); c.hidden=false;
   c.innerHTML = `Тебе бросили вызов: у друга <b>${friend} из 10</b>. Сможешь лучше?`;
@@ -236,6 +253,7 @@ function show(name){ for (const k in sections) sections[k].hidden = k!==name; wi
 function plural(n,a,b,c){n=Math.abs(n)%100;const d=n%10;if(n>10&&n<20)return c;if(d>1&&d<5)return b;if(d===1)return a;return c}
 
 function start(){
+  hit('plays');
   idx=0; score=0; streak=0; best=0; answers=[];
   flip = ROUNDS.map(()=>Math.random()<.5);
   $('#dots').innerHTML = ROUNDS.map(()=>'<i></i>').join('');
@@ -273,7 +291,7 @@ function pick(btn){
     if (!right) { btn.classList.add('shake'); navigator.vibrate?.(120); }
     else { burst(winner); navigator.vibrate?.(30); }
   }, 900);
-  if (right){score++;streak++;best=Math.max(best,streak);} else streak=0;
+  if (right){score++;streak++;best=Math.max(best,streak);} else {streak=0; hit('miss-r'+(idx+1));}
   answers.push(right);
   const d=$('#dots').children[idx]; d.classList.remove('cur'); d.classList.add(right?'ok':'no');
   const r=ROUNDS[idx], hi=Math.max(btn._k,other._k), lo=Math.min(btn._k,other._k);
@@ -310,11 +328,18 @@ function finish(){
     return `<div class="miss"><span class="e">${w.e}</span><span><b>${w.n}</b> (${w.p}) — ${w.k} ккал, а ${l.n.toLowerCase()} — ${l.k}</span></div>`;
   }).join('') : '';
   if (score>=8) setTimeout(()=>burst($('#r-num'),80),700);
+  const pr=$('#r-pct'); pr.hidden=true;
+  Promise.all([hit('done'),hit('s'+score)]).then(()=>percentile(score)).then(res=>{
+    if (!res) return;
+    pr.textContent = res.pct>=50 ? `Это лучше, чем у ${res.pct}% игроков` : res.pct>0 ? `Лучше, чем у ${res.pct}% игроков. Есть куда расти` : `Пока ниже всех. Реванш?`;
+    pr.hidden=false;
+  });
 }
 const shareUrl = () => `${URL_BASE}?r=${score}`;
 const shareText = () => `Мой результат в «Угадай калории» — ${score} из 10. Спорим, у тебя меньше?`;
 
 async function challenge(){
+  hit('share');
   const data={title:'Угадай калории', text:shareText(), url:shareUrl()};
   try { if (navigator.share) { await navigator.share(data); return; } } catch(e){ if (e.name==='AbortError') return; }
   try { await navigator.clipboard.writeText(`${data.text} ${data.url}`); toast('Ссылка скопирована — отправь другу'); }
@@ -353,6 +378,7 @@ async function storyImage(){
 function roundRect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
 function wrap(x,t,cx,y,maxW,lh){const w=t.split(' ');let line='';const lines=[];for(const s of w){const tt=line?line+' '+s:s;if(x.measureText(tt).width>maxW&&line){lines.push(line);line=s;}else line=tt;}lines.push(line);lines.forEach((l,i)=>x.fillText(l,cx,y+i*lh));}
 async function saveImage(){
+  hit('story');
   const blob=await storyImage(); const file=new File([blob],`ugaday-${score}.png`,{type:'image/png'});
   try { if (navigator.canShare?.({files:[file]})) { await navigator.share({files:[file], text:shareText()+' '+shareUrl()}); return; } } catch(e){ if (e.name==='AbortError') return; }
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=file.name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
@@ -381,6 +407,7 @@ $('#next').onclick=next;
 $('#b-challenge').onclick=challenge;
 $('#b-img').onclick=saveImage;
 $('#b-again').onclick=start;
+$('#b-tg').addEventListener('click',()=>hit('tg'));
 </script>
 </body>
 </html>
