@@ -6,7 +6,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=Manrope:wght@600;700;800&display=swap">
 <style>
 /* Кадр 540×960 CSS-пикселей, снимается с масштабом 2 → 1080×1920.
-   Состояние считается из времени t в render(t). Пары НЕ из игры, ответы не показываются. */
+   Состояние считается из времени t в render(t). Пары НЕ из игры, ответы не показываются.
+   window.EVENTS — моменты для звуков (вжух, тик, звонок), по ним собирается звуковая дорожка. */
 *{box-sizing:border-box;margin:0}
 html,body{width:540px;height:960px;overflow:hidden;background:#081028}
 #stage{position:relative;width:540px;height:960px;overflow:hidden;color:#F6EDE0;font-family:Manrope,sans-serif;
@@ -14,18 +15,17 @@ html,body{width:540px;height:960px;overflow:hidden;background:#081028}
 #dust{position:absolute;inset:0;width:540px;height:960px}
 .layer{position:absolute;inset:0;display:none}
 .gold{background:linear-gradient(180deg,#F8E0BC 0%,#E3AE76 52%,#B06D40 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
-.ph{position:absolute;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px rgba(233,185,131,.55),0 18px 40px -12px rgba(0,0,0,.8)}
+.ph{border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px rgba(233,185,131,.55),0 18px 40px -12px rgba(0,0,0,.8)}
 /* hook */
-#hook .t0{position:absolute;top:118px;left:0;right:0;text-align:center;font:800 20px Manrope;letter-spacing:.2em;color:#E9B983}
-#hook .t1{position:absolute;top:150px;left:0;right:0;text-align:center;font:400 72px/1.02 Forum,serif}
-#hook .t2{position:absolute;top:400px;left:30px;right:30px;text-align:center;font:800 30px/1.25 Manrope}
-#hook .ph{width:165px;height:165px}
+#hook .t1{position:absolute;top:210px;left:20px;right:20px;text-align:center;font:400 82px/1.02 Forum,serif}
+#hook .t2{position:absolute;top:500px;left:30px;right:30px;text-align:center;font:800 38px/1.22 Manrope}
+#hook .t2 b{color:#F8E0BC}
 /* pairs */
 .counter{position:absolute;top:96px;left:0;right:0;text-align:center;font:800 18px Manrope;letter-spacing:.2em;color:#E9B983}
 .q{position:absolute;top:126px;left:20px;right:20px;text-align:center;font:800 38px/1.15 Manrope}
 .row{position:absolute;left:24px;right:24px;height:226px;display:flex;align-items:center;gap:18px;padding:0 18px;border-radius:30px;border:2px solid rgba(233,185,131,.22);background:rgba(255,255,255,.04)}
 .row.r1{top:250px} .row.r2{top:520px}
-.row .ph{position:static;width:180px;height:180px;flex:none}
+.row .ph{width:180px;height:180px;flex:none}
 .row .tx{display:flex;flex-direction:column;gap:6px;min-width:0}
 .row .nm{font:800 32px/1.1 Manrope}
 .row .pt{font:700 21px/1.2 Manrope;color:#C4CADD}
@@ -34,19 +34,12 @@ html,body{width:540px;height:960px;overflow:hidden;background:#081028}
 .vs{position:absolute;left:132px;top:456px;width:84px;height:84px;margin-left:-42px;border-radius:50%;display:grid;place-items:center;z-index:3;
   background:linear-gradient(180deg,#F8E0BC,#E3AE76);color:#0A1330;font:800 40px Manrope;box-shadow:0 0 0 8px #0B1534,0 10px 30px -8px rgba(227,174,118,.7)}
 .ring{position:absolute;inset:-8px;border-radius:50%}
-#comment{position:absolute;top:772px;left:20px;right:20px;text-align:center;font:800 28px/1.3 Manrope}
-#comment span{color:#F8E0BC}
-/* joke */
-#joke .a{position:absolute;top:300px;left:24px;right:24px;text-align:center;font:400 64px/1.06 Forum,serif}
-#joke .b{position:absolute;top:480px;left:0;right:0;text-align:center;font-size:96px}
-#joke .c{position:absolute;top:640px;left:30px;right:30px;text-align:center;font:700 26px/1.3 Manrope;color:#C4CADD}
 /* end */
 #end .logo{position:absolute;top:110px;left:50%;width:160px;height:160px;margin-left:-80px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #E3AE76,0 20px 50px -10px rgba(0,0,0,.8)}
-#end .t1{position:absolute;top:300px;left:0;right:0;text-align:center;font:400 72px/1.02 Forum,serif}
-#end .t2{position:absolute;top:470px;left:30px;right:30px;text-align:center;font:800 30px/1.3 Manrope}
-#end .btn{position:absolute;top:620px;left:50px;right:50px;height:92px;border-radius:99px;display:grid;place-items:center;font:800 27px Manrope;color:#0A1330;
+#end .t1{position:absolute;top:300px;left:24px;right:24px;text-align:center;font:400 58px/1.05 Forum,serif}
+#end .btn{position:absolute;top:620px;left:50px;right:50px;height:96px;border-radius:99px;display:grid;place-items:center;font:800 32px Manrope;color:#0A1330;
   background:linear-gradient(180deg,#F8E0BC,#E3AE76 55%,#B06D40);box-shadow:0 14px 40px -10px rgba(227,174,118,.7)}
-#end .url{position:absolute;top:736px;left:0;right:0;text-align:center;font:700 17px Manrope;color:#E9B983}
+#end .arrow{position:absolute;top:732px;left:0;right:0;text-align:center;font-size:54px}
 </style>
 </head>
 <body>
@@ -54,36 +47,23 @@ html,body{width:540px;height:960px;overflow:hidden;background:#081028}
   <canvas id="dust" width="1080" height="1920"></canvas>
 
   <div id="hook" class="layer">
-    <div class="t0" id="ht0">ИГРА · FOODHACKLAB</div>
-    <div class="t1 gold" id="ht1">Спорим,<br>больше 5<br>не угадаешь?</div>
-    <div class="t2" id="ht2">Где больше калорий?</div>
-    <img class="ph" id="h1" src="img/granola.webp">
-    <img class="ph" id="h2" src="img/donut.webp">
-    <img class="ph" id="h3" src="img/chips.webp">
-    <img class="ph" id="h4" src="img/burger.webp">
+    <div class="t1 gold" id="ht1">Проверим, какой ты нутрициолог?</div>
+    <div class="t2" id="ht2">Спорим, не угадаешь,<br><b>что калорийнее?</b></div>
   </div>
 
   <div id="pairs" class="layer">
     <div class="counter" id="pc"></div>
-    <div class="q" id="pq">Где больше калорий?</div>
+    <div class="q" id="pq">Что калорийнее?</div>
     <div class="row r1" id="ra"><img class="ph" id="ia"><div class="tx"><div class="nm" id="na"></div><div class="pt" id="pa"></div><div class="kc"><span>?</span><small>ккал</small></div></div></div>
     <div class="row r2" id="rb"><img class="ph" id="ib"><div class="tx"><div class="nm" id="nb"></div><div class="pt" id="pb"></div><div class="kc"><span>?</span><small>ккал</small></div></div></div>
     <div class="vs" id="vs"><svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="47" fill="none" stroke="#F8E0BC" stroke-width="4" stroke-linecap="round" id="ring" transform="rotate(-90 50 50)" stroke-dasharray="295.3" stroke-dashoffset="0"/></svg><span id="cd">или</span></div>
-    <div id="comment">Пиши ответ в комментариях <span>👇</span></div>
-  </div>
-
-  <div id="joke" class="layer">
-    <div class="a gold" id="ja">Даже нутрициологи путаются*</div>
-    <div class="b" id="jb">🤭</div>
-    <div class="c" id="jc">*ну, может, и нет. Проверь себя</div>
   </div>
 
   <div id="end" class="layer">
     <img class="logo" id="elogo" src="../ugaday/logo.webp">
-    <div class="t1 gold" id="et1">Угадай<br>калории</div>
-    <div class="t2" id="et2">10 пар с подвохом.<br>Спорим, больше 5 не угадаешь?</div>
-    <div class="btn" id="ebtn">Играть — ссылка ниже</div>
-    <div class="url" id="eurl">foodhacklab-pitanie.github.io/prognoz/ugaday</div>
+    <div class="t1 gold" id="et1">Проверь свой<br>уровень нутрициолога<br>в&nbsp;игре</div>
+    <div class="btn" id="ebtn">Ссылка под видео</div>
+    <div class="arrow" id="earr">👇</div>
   </div>
 </div>
 
@@ -94,8 +74,15 @@ const PAIRS=[
   {a:{img:'cashew',n:'Кешью',p:'горсть, 60 г'}, b:{img:'donut',n:'Пончик в глазури',p:'1 штука'}},
   {a:{img:'smoothie',n:'Смузи',p:'большой стакан, 400 мл'}, b:{img:'pizza',n:'Пицца',p:'1 кусок'}},
 ];
-const HOOK=2.6, PAIR=3.1, JOKE=2.9, END=4.2;
-const T_PAIRS=HOOK, T_JOKE=HOOK+PAIRS.length*PAIR, T_END=T_JOKE+JOKE, DURATION=T_END+END;
+const HOOK=2.6, DUR=[2.5,2.1,1.9,1.8], END=4.2;   // пары ускоряются
+const STARTS=DUR.reduce((a,d,i)=>(a.push(i?a[i-1]+DUR[i-1]:HOOK),a),[]);
+const T_END=STARTS[STARTS.length-1]+DUR[DUR.length-1], DURATION=T_END+END;
+// countdown inside a pair: starts at 0.35s, ends 0.4s before the pair ends
+const cdWin=i=>[0.35, DUR[i]-0.45];
+
+const EVENTS=[{t:0.05,type:'whoosh'},{t:0.95,type:'pop'}];
+STARTS.forEach((s,i)=>{ EVENTS.push({t:s,type:'whoosh'}); const [a,b]=cdWin(i); for(let k=0;k<3;k++) EVENTS.push({t:s+a+(b-a)*k/3,type:'tick'}); EVENTS.push({t:s+b,type:'buzz'}); });
+EVENTS.push({t:T_END,type:'whoosh'},{t:T_END+0.75,type:'ding'});
 
 const $=s=>document.querySelector(s);
 const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
@@ -119,54 +106,36 @@ function setPair(i){ if(i===curPair) return; curPair=i; const p=PAIRS[i];
 
 function render(t){
   drawDust(t);
-  // hook
   scene('#hook', t<HOOK);
   if(t<HOOK){
-    $('#hook').style.opacity=1-prog(t,HOOK-0.3,HOOK);
-    show($('#ht0'),prog(t,0,0.3));
-    show($('#ht1'),prog(t,0,0.3),lerp(30,0,easeOut(prog(t,0,0.5))),lerp(.85,1,backOut(prog(t,0,0.55))));
-    show($('#ht2'),prog(t,0.7,1.0),lerp(16,0,easeOut(prog(t,0.7,1.1))));
-    [['#h1',70,520,-1],['#h2',305,520,1],['#h3',70,705,-1],['#h4',305,705,1]].forEach(([s,x,y,d],i)=>{
-      const p=backOut(prog(t,0.25+i*0.12,0.85+i*0.12)), el=$(s);
-      el.style.left=lerp(x+d*320,x,p)+'px'; el.style.top=(y+Math.sin(t*2+i)*7)+'px'; el.style.opacity=prog(t,0.25+i*0.12,0.5+i*0.12);
-      el.style.transform=`rotate(${d*(1-p)*40+Math.sin(t*1.5+i)*4}deg)`; });
+    $('#hook').style.opacity=1-prog(t,HOOK-0.25,HOOK);
+    show($('#ht1'),prog(t,0,0.25),lerp(30,0,easeOut(prog(t,0,0.45))),lerp(.85,1,backOut(prog(t,0,0.5))));
+    show($('#ht2'),prog(t,0.9,1.15),lerp(18,0,easeOut(prog(t,0.9,1.3))),lerp(.9,1,backOut(prog(t,0.9,1.3)))*(1+0.025*Math.sin(Math.max(0,t-1.3)*8)));
   }
-  // pairs
-  const inPairs = t>=T_PAIRS && t<T_JOKE; scene('#pairs', inPairs);
+  const inPairs = t>=HOOK && t<T_END; scene('#pairs', inPairs);
   if(inPairs){
-    const i=Math.min(PAIRS.length-1,Math.floor((t-T_PAIRS)/PAIR)), lt=t-T_PAIRS-i*PAIR; setPair(i);
-    $('#pairs').style.opacity = i===0 ? prog(lt,0,0.2) : (i===PAIRS.length-1 ? 1-prog(lt,PAIR-0.25,PAIR) : 1);
-    show($('#pc'),1); show($('#pq'),prog(t-T_PAIRS,0,0.3));
-    const ia=backOut(prog(lt,0,0.45)), ib=backOut(prog(lt,0.1,0.55)), out=easeOut(prog(lt,PAIR-0.22,PAIR));
-    const last = i===PAIRS.length-1;
+    let i=STARTS.length-1; while(t<STARTS[i]) i--; const lt=t-STARTS[i], D=DUR[i]; setPair(i);
+    const last=i===PAIRS.length-1;
+    $('#pairs').style.opacity = i===0 ? prog(lt,0,0.15) : (last ? 1-prog(lt,D-0.2,D) : 1);
+    show($('#pq'),i===0?prog(lt,0,0.25):1);
+    const ia=backOut(prog(lt,0,0.32)), ib=backOut(prog(lt,0.06,0.38)), out=easeOut(prog(lt,D-0.16,D));
     $('#ra').style.transform=`translateX(${(1-ia)*-560 + (last?0:out*-560)}px)`; $('#ra').style.opacity=clamp(ia*1.5);
     $('#rb').style.transform=`translateX(${(1-ib)*560 + (last?0:out*560)}px)`; $('#rb').style.opacity=clamp(ib*1.5);
-    const cdT=lt-0.5, span=2.3; let label='или', off=0;
+    const [a,b]=cdWin(i), cdT=lt-a, span=b-a; let label='или', off=0;
     if(cdT>=0 && cdT<span){ label=String(3-Math.floor(cdT/span*3)); off=295.3*(cdT/span); } else if(cdT>=span){ label='?'; off=295.3; }
     $('#cd').textContent=label; $('#ring').setAttribute('stroke-dashoffset',off.toFixed(1));
-    const ph=(cdT/span*3)%1, pulse = cdT>=0&&cdT<span ? 1+0.18*Math.max(0,1-ph*4) : 1;
-    $('#vs').style.transform=`scale(${pulse*backOut(prog(lt,0.15,0.5))})`;
-    show($('#comment'),prog(t-T_PAIRS,0.6,0.9),0,1+0.03*Math.sin(t*5));
+    const ph=(cdT/span*3)%1, pulse = cdT>=0&&cdT<span ? 1+0.18*Math.max(0,1-ph*4) : (cdT>=span? 1+0.12*Math.max(0,1-(cdT-span)*5):1);
+    $('#vs').style.transform=`scale(${pulse*backOut(prog(lt,0.1,0.35))})`;
   }
-  // joke
-  const jt=t-T_JOKE, inJoke=jt>=0 && t<T_END; scene('#joke',inJoke);
-  if(inJoke){
-    $('#joke').style.opacity=1-prog(jt,JOKE-0.25,JOKE);
-    show($('#ja'),prog(jt,0,0.3),lerp(24,0,easeOut(prog(jt,0,0.5))),lerp(.85,1,backOut(prog(jt,0,0.5))));
-    show($('#jb'),prog(jt,0.5,0.7),0,backOut(prog(jt,0.5,0.9))*(1+0.06*Math.sin(Math.max(0,jt-0.9)*10)));
-    show($('#jc'),prog(jt,1.1,1.4),lerp(14,0,easeOut(prog(jt,1.1,1.6))));
-  }
-  // end
   const et=t-T_END; scene('#end',et>=0);
   if(et>=0){
     show($('#elogo'),prog(et,0,0.3),0,backOut(prog(et,0,0.5)));
     show($('#et1'),prog(et,0.15,0.45),lerp(20,0,easeOut(prog(et,0.15,0.6))));
-    show($('#et2'),prog(et,0.4,0.7),lerp(16,0,easeOut(prog(et,0.4,0.8))));
-    show($('#ebtn'),prog(et,0.7,0.95),0,backOut(prog(et,0.7,1.1))*(1+0.03*Math.sin(Math.max(0,et-1.1)*6)));
-    show($('#eurl'),prog(et,0.9,1.2));
+    show($('#ebtn'),prog(et,0.6,0.85),0,backOut(prog(et,0.6,1.0))*(1+0.035*Math.sin(Math.max(0,et-1.0)*6)));
+    show($('#earr'),prog(et,0.9,1.1),Math.abs(Math.sin(Math.max(0,et-1.1)*4))*14);
   }
 }
-window.DURATION=DURATION; window.render=render; render(0);
+window.DURATION=DURATION; window.EVENTS=EVENTS; window.render=render; render(0);
 </script>
 </body>
 </html>
