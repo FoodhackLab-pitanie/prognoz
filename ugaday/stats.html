@@ -59,12 +59,12 @@ const pct = (a,b) => b ? Math.round(a/b*100)+'%' : '—';
 async function load(){
   document.getElementById('when').textContent='Загружаю…';
   try{
-    const keys=['plays','done','share','tg','story','from-challenge',...Array.from({length:11},(_,i)=>'s'+i),...Array.from({length:10},(_,i)=>'miss-r'+(i+1))];
+    const keys=['plays','done','share','tg','story','from-challenge','subscribe',...Array.from({length:11},(_,i)=>'s'+i),...Array.from({length:10},(_,i)=>'miss-r'+(i+1))];
     const vals=await Promise.all(keys.map(get)); const v=Object.fromEntries(keys.map((k,i)=>[k,vals[i]]));
     document.getElementById('tiles').innerHTML=[
       [v.plays,'начали игру'],[v.done,`дошли до конца (${pct(v.done,v.plays)})`],
       [v.share+v.tg,'нажали «вызов» или Telegram'],[v.story,'сохранили картинку для сторис'],
-      [v['from-challenge'],'пришли по ссылке-вызову'],
+      [v['from-challenge'],'пришли по ссылке-вызову'],[v.subscribe,`нажали «Подписаться» (${pct(v.subscribe,v.done)} от доигравших)`],
     ].map(([n,t])=>`<div class="tile"><b>${fmt(n)}</b><span>${t}</span></div>`).join('');
     const sc=Array.from({length:11},(_,i)=>v['s'+i]), smax=Math.max(1,...sc), stot=sc.reduce((a,b)=>a+b,0);
     const avg = stot ? (sc.reduce((a,n,i)=>a+n*i,0)/stot).toFixed(1).replace('.',',') : '—';
