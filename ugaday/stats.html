@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Статистика · Угадай калории</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=Manrope:wght@500;700;800&display=swap">
+<style>
+:root{color-scheme:dark;--bg:#081028;--ink:#F3E8D8;--muted:#A9B0C9;--gold:#E9B983;--gold1:#F8E0BC;--line:rgba(233,185,131,.25);--green:#8ED477;--red:#EE8E76}
+*{box-sizing:border-box}
+html{background:#050A1C}
+body{margin:0;background:linear-gradient(180deg,#0E1A3D,#081028 60%,#050A1C) fixed;color:var(--ink);font:500 15px/1.45 Manrope,system-ui,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:18px}
+h1{font:400 34px/1.1 Forum,Georgia,serif;margin:0;color:var(--gold1)}
+h2{font:700 12px Manrope,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
+.muted{color:var(--muted);margin:0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.tile{border:1px solid var(--line);border-radius:16px;padding:14px;background:rgba(255,255,255,.03)}
+.tile b{display:block;font:400 34px/1 Forum,Georgia,serif;color:var(--gold1)}
+.tile span{font-size:13px;color:var(--muted)}
+.box{border:1px solid var(--line);border-radius:18px;padding:16px;background:rgba(255,255,255,.03)}
+.row{display:grid;grid-template-columns:minmax(0,9.5em) 1fr 3.2em;gap:10px;align-items:center;margin:6px 0;font-size:14px}
+.row .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:12px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#B06D40,#E9B983);border-radius:6px}
+.bar.red i{background:linear-gradient(90deg,#9a4a3a,var(--red))}
+.row .n{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.err{color:var(--red)}
+button{font:800 14px Manrope,sans-serif;border:1px solid var(--line);background:transparent;color:var(--gold1);border-radius:99px;padding:10px 16px;cursor:pointer}
+a{color:var(--gold)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div>
+    <h1>Статистика «Угадай калории»</h1>
+    <p class="muted" id="when">Загружаю…</p>
+  </div>
+  <div class="tiles" id="tiles"></div>
+  <div class="box"><h2>Результаты игроков</h2><div id="scores"></div></div>
+  <div class="box"><h2>Где ошибаются чаще всего</h2><p class="muted" style="margin-bottom:8px">Доля ошибок в каждом раунде от числа законченных игр</p><div id="misses"></div></div>
+  <p class="muted">Счётчик простой: считает нажатия, а не уникальных людей, и не защищён от накрутки. Для оценки «зашло или нет» его хватает, для точной аналитики — нет. <a href="./">Открыть игру</a></p>
+  <div><button id="reload">Обновить</button></div>
+</main>
+<script>
+const STATS='https://abacus.jasoncameron.dev', NS='foodhacklab-ugaday';
+const ROUND_NAMES=['Мёд / сахар','Сок / кола','Хлебцы / хлеб','Масло / банан','Орехи / шоколад','Арбуз / мороженое','Финики / кола','Семечки / батон','Авокадо / яйца','Пиво / грудка'];
+const get = key => fetch(`${STATS}/get/${NS}/${key}`,{cache:'no-store'}).then(r=>r.status===404?{value:0}:r.ok?r.json():Promise.reject(r.status)).then(j=>Number(j.value)||0);
+const fmt = n => n.toLocaleString('ru-RU');
+const pct = (a,b) => b ? Math.round(a/b*100)+'%' : '—';
+async function load(){
+  document.getElementById('when').textContent='Загружаю…';
+  try{
+    const keys=['plays','done','share','tg','story','from-challenge',...Array.from({length:11},(_,i)=>'s'+i),...Array.from({length:10},(_,i)=>'miss-r'+(i+1))];
+    const vals=await Promise.all(keys.map(get)); const v=Object.fromEntries(keys.map((k,i)=>[k,vals[i]]));
+    document.getElementById('tiles').innerHTML=[
+      [v.plays,'начали игру'],[v.done,`дошли до конца (${pct(v.done,v.plays)})`],
+      [v.share+v.tg,'нажали «вызов» или Telegram'],[v.story,'сохранили картинку для сторис'],
+      [v['from-challenge'],'пришли по ссылке-вызову'],
+    ].map(([n,t])=>`<div class="tile"><b>${fmt(n)}</b><span>${t}</span></div>`).join('');
+    const sc=Array.from({length:11},(_,i)=>v['s'+i]), smax=Math.max(1,...sc), stot=sc.reduce((a,b)=>a+b,0);
+    const avg = stot ? (sc.reduce((a,n,i)=>a+n*i,0)/stot).toFixed(1).replace('.',',') : '—';
+    document.getElementById('scores').innerHTML=`<p class="muted" style="margin-bottom:8px">Средний счёт: ${avg} из 10</p>`+
+      sc.map((n,i)=>`<div class="row"><span class="lbl">${i} из 10</span><span class="bar"><i style="width:${n/smax*100}%"></i></span><span class="n">${fmt(n)}</span></div>`).join('');
+    const ms=Array.from({length:10},(_,i)=>v['miss-r'+(i+1)]), base=Math.max(1,v.done);
+    document.getElementById('misses').innerHTML=ms.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).map(({n,i})=>
+      `<div class="row"><span class="lbl">${i+1}. ${ROUND_NAMES[i]}</span><span class="bar red"><i style="width:${Math.min(100,n/base*100)}%"></i></span><span class="n">${pct(n,v.done)}</span></div>`).join('');
+    document.getElementById('when').textContent='Обновлено: '+new Date().toLocaleString('ru-RU');
+  }catch(e){
+    document.getElementById('when').innerHTML='<span class="err">Сервис счётчика не ответил. Попробуйте обновить через минуту.</span>';
+  }
+}
+document.getElementById('reload').onclick=load; load();
+</script>
+</body>
+</html>
