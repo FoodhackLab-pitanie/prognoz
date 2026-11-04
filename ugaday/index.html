@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Угадай калории · FoodHackLab</title>
-<meta name="description" content="10 пар еды. Выбери, где больше калорий. Спорим, не угадаешь больше 5?">
+<meta name="description" content="Проверим, какой ты нутрициолог? 10 пар еды: выбери, где больше калорий. Спорим, и 5 не угадаешь?">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://foodhacklab-pitanie.github.io/prognoz/ugaday/">
 <meta property="og:image" content="https://foodhacklab-pitanie.github.io/prognoz/ugaday/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="FoodHackLab">
-<meta property="og:title" content="Спорим, ошибёшься? Угадай, где больше калорий">
-<meta property="og:description" content="10 пар еды, в которых подвох. Спорим, не угадаешь больше 5 из 10?">
+<meta property="og:title" content="Проверим, какой ты нутрициолог?">
+<meta property="og:description" content="10 пар еды: выбери, где больше калорий. Спорим, и 5 не угадаешь?">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#081028">
 <script src="../metrika.js"></script>
@@ -52,6 +52,9 @@ body{background:var(--bg);color:var(--ink);font:500 17px/1.5 var(--f-body);-webk
 h1{font:400 clamp(34px,10vw,48px)/1.04 var(--f-display);margin:0;text-wrap:balance}
 h2{font:800 clamp(22px,6.3vw,28px)/1.22 var(--f-body);letter-spacing:-.01em;margin:0;text-wrap:balance}
 .sub{color:var(--muted);margin:0}
+.sub.lead{font-size:19px;line-height:1.45;color:var(--ink)}
+.sub.lead b{color:var(--gold1)}
+.meta{margin:-6px 0 0;text-align:center;color:var(--muted);font-size:15px;font-weight:700}
 .btn{appearance:none;border:0;cursor:pointer;font:800 17px/1.1 var(--f-body);letter-spacing:.01em;border-radius:999px;padding:19px 22px;width:100%;
   color:var(--on-gold);background:linear-gradient(180deg,var(--gold1),var(--gold2) 55%,var(--gold3));box-shadow:0 10px 34px -12px rgba(227,174,118,.6);transition:transform .15s}
 .btn:active{transform:scale(.97)}
@@ -69,8 +72,6 @@ h2{font:800 clamp(22px,6.3vw,28px)/1.22 var(--f-body);letter-spacing:-.01em;marg
 @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
 .challenge{border:1px dashed var(--gold);border-radius:18px;padding:14px 16px;background:rgba(233,185,131,.08);font-weight:700}
 .challenge b{color:var(--gold1);font-size:20px}
-.rules{margin:0;padding:0;list-style:none;display:grid;gap:10px;color:var(--ink);font-size:16.5px}
-.rules li::before{content:"✦ ";color:var(--gold)}
 
 /* game */
 .hud{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;font-size:15.5px;color:var(--muted)}
@@ -157,14 +158,10 @@ h2{font:800 clamp(22px,6.3vw,28px)/1.22 var(--f-body);letter-spacing:-.01em;marg
   <section id="intro" class="intro">
     <div class="teaser" aria-hidden="true"><img class="em ph" src="img/avocado.webp" width="200" height="200" alt=""><span class="vs">или</span><img class="em ph" src="img/eggs.webp" width="200" height="200" alt=""></div>
     <div id="challenge" class="challenge" hidden></div>
-    <h1 class="gold-text">Спорим, ошибёшься?</h1>
-    <p class="sub">Выбери, где больше калорий. 10 пар обычной еды, и в каждой подвох. Проверь себя, а потом друзей.</p>
-    <ul class="rules">
-      <li>Нажми на то, что, по-твоему, калорийнее</li>
-      <li>Порции указаны честно, в граммах или штуках</li>
-      <li>В конце брось вызов другу</li>
-    </ul>
-    <button class="btn" id="start">Играть</button>
+    <h1 class="gold-text">Проверим, какой ты нутрициолог?</h1>
+    <p class="sub lead">10 пар еды. Выбери, где больше калорий.<br><b>Спорим, и 5 не угадаешь?</b></p>
+    <button class="btn" id="start">Начать проверку</button>
+    <p class="meta">⏱ 1–2 минуты · без регистрации</p>
   </section>
 
   <!-- GAME -->
@@ -244,11 +241,11 @@ const ROUNDS = [
    q:'Финал. Пол-литра против грудки', f:'В пол-литре пива калорий больше, чем в куске куриной грудки. И это ещё без закуски.'},
 ];
 const TITLES = [
-  [0,3,'Калории тебя разыграли','Не переживай: эти пары специально подобраны с подвохом. Зато теперь ты знаешь, где он прячется.'],
-  [4,5,'Подвох почти раскушен','Чутьё есть, но подвохи ещё срабатывают. Проверь друзей — у них вряд ли лучше.'],
-  [6,7,'Калорийный детектив','Тебя трудно обмануть. Трудно, но можно.'],
-  [8,9,'Ходячая этикетка','Ты видишь калории сквозь упаковку. Друзьям будет непросто.'],
-  [10,10,'Сканер калорий','Десять из десяти. Это редкость, можно хвастаться.'],
+  [0,3,'Нутрициолог-стажёр','Калории тебя разыграли, но это поправимо: теперь ты знаешь, где прячутся подвохи.'],
+  [4,5,'Младший нутрициолог','Чутьё есть, но подвохи ещё срабатывают. Проверь друзей — у них вряд ли лучше.'],
+  [6,7,'Нутрициолог','Тебя трудно обмануть. Трудно, но можно.'],
+  [8,9,'Старший нутрициолог','Ты видишь калории сквозь упаковку. Друзьям будет непросто.'],
+  [10,10,'Главный нутрициолог','Десять из десяти. Можно хвастаться.'],
 ];
 const URL_BASE = location.origin + location.pathname;
 const $ = s => document.querySelector(s);
@@ -392,7 +389,8 @@ function finish(){
   });
 }
 const shareUrl = () => `${URL_BASE}?r=${score}`;
-const shareText = () => `Мой результат в «Угадай калории» — ${score} из 10. Спорим, у тебя меньше?`;
+const rankOf = n => TITLES.find(([a,b])=>n>=a&&n<=b)[2];
+const shareText = () => `Мой уровень в «Угадай калории» — ${rankOf(score)} (${score} из 10). А какой нутрициолог ты?`;
 
 async function challenge(){
   hit('share');
@@ -415,7 +413,7 @@ async function storyImage(){
   x.textAlign='center';
   x.fillStyle='#E9B983'; x.font='700 34px Manrope, sans-serif'; x.fillText('УГАДАЙ КАЛОРИИ · FOODHACKLAB',W/2,200);
   x.fillStyle=gold(250,420); x.font='400 96px Forum, Georgia, serif';
-  x.fillText('Спорим,',W/2,330); x.fillText('ошибёшься?',W/2,440);
+  x.fillText('Какой ты',W/2,330); x.fillText('нутрициолог?',W/2,440);
   const load=src=>new Promise(r=>{const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src;});
   const [i1,i2]=await Promise.all([load('img/avocado.webp'),load('img/beer.webp')]);
   for (const [im,cx] of [[i1,W/2-230],[i2,W/2+230]]) if (im) {
