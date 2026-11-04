@@ -15,6 +15,7 @@
 <meta property="og:description" content="10 пар еды, в которых подвох. Спорим, не угадаешь больше 5 из 10?">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#081028">
+<script src="../metrika.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=Manrope:wght@400;500;600;700;800&display=swap">
@@ -235,7 +236,14 @@ function api(kind,key){
   return fetch(`${STATS}/${kind}/${NS}/${key}`,{signal:c.signal,cache:'no-store'})
     .then(r=>r.ok?r.json():{value:0}).then(j=>Number(j.value)||0).catch(()=>null).finally(()=>clearTimeout(t));
 }
-const hit = key => api('hit',key);
+const YM_GOALS={plays:'start',share:'challenge',tg:'telegram',story:'story','from-challenge':'from_challenge'};
+function ymFor(key){
+  if (!window.ymGoal) return;
+  if (YM_GOALS[key]) ymGoal(YM_GOALS[key]);
+  else if (/^s\d+$/.test(key)) ymGoal('finish',{score:+key.slice(1)});
+  else if (/^miss-r\d+$/.test(key)) ymGoal('miss',{round:+key.slice(6)});
+}
+const hit = key => { ymFor(key); return api('hit',key); };
 async function percentile(my){
   const vals=await Promise.all(Array.from({length:11},(_,i)=>api('get','s'+i)));
   if (vals.some(v=>v===null)) return null;
