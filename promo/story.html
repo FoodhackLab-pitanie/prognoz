@@ -7,7 +7,7 @@
 <style>
 /* Сторис 540×960 CSS-пикселей, снимается с масштабом 2 → 1080×1920.
    ?v=a — вызов как в ролике, место под стикер-ссылку; ?v=b — крупный вопрос, место под стикер-опрос.
-   Нижние ~200px оставлены пустыми под стикеры и интерфейс сторис. */
+   Вариант A заполняет весь кадр; у B внизу место под стикеры. */
 *{box-sizing:border-box;margin:0}
 html,body{width:540px;height:960px;overflow:hidden}
 body{color:#F6EDE0;font-family:Manrope,sans-serif;
@@ -19,11 +19,13 @@ body{color:#F6EDE0;font-family:Manrope,sans-serif;
 .or{position:absolute;width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#F8E0BC,#E3AE76);color:#0A1330;font:800 22px Manrope;box-shadow:0 0 0 9px #0B1534}
 .lbl{position:absolute;text-align:center;font:800 24px/1.15 Manrope}
 .lbl small{display:block;font:700 17px Manrope;color:#C4CADD;margin-top:4px}
-/* A */
-#a .t1{position:absolute;top:105px;left:20px;right:20px;text-align:center;font:400 64px/1.02 Forum,serif}
-#a .t2{position:absolute;top:600px;left:20px;right:20px;text-align:center;font:800 30px/1.25 Manrope}
+/* A — на весь экран */
+#a .logo{position:absolute;top:36px;left:50%;width:170px;height:170px;margin-left:-85px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #E3AE76,0 20px 50px -12px rgba(0,0,0,.85)}
+#a .t1{position:absolute;top:222px;left:16px;right:16px;text-align:center;font:400 64px/1.02 Forum,serif}
+#a .t2{position:absolute;top:706px;left:16px;right:16px;text-align:center;font:800 34px/1.22 Manrope}
 #a .t2 b{color:#F8E0BC}
-#a .cta{position:absolute;top:690px;left:0;right:0;text-align:center;font:800 22px Manrope;color:#E9B983}
+#a .btn{position:absolute;top:812px;left:40px;right:40px;height:92px;border-radius:99px;display:grid;place-items:center;font:800 32px Manrope;color:#0A1330;
+  background:linear-gradient(180deg,#F8E0BC,#E3AE76 55%,#B06D40);box-shadow:0 14px 40px -10px rgba(227,174,118,.75)}
 /* B */
 #b .t1{position:absolute;top:100px;left:20px;right:20px;text-align:center;font:400 92px/1 Forum,serif}
 #b .t2{position:absolute;top:640px;left:30px;right:30px;text-align:center;font:800 24px/1.3 Manrope;color:#C4CADD}
@@ -32,15 +34,15 @@ body{color:#F6EDE0;font-family:Manrope,sans-serif;
 </head>
 <body>
 <div class="v" id="a">
-  <div class="eb">УГАДАЙ КАЛОРИИ · FOODHACKLAB</div>
+  <img class="logo" src="img/logo.png" alt="FoodHackLab">
   <div class="t1 gold">Проверим, какой ты нутрициолог?</div>
-  <img class="ph" src="img/granola.webp" style="left:40px;top:300px;width:200px;height:200px">
-  <img class="ph" src="img/burger.webp" style="left:300px;top:300px;width:200px;height:200px">
-  <div class="or" style="left:227px;top:357px">или</div>
-  <div class="lbl" style="left:20px;width:240px;top:514px">Гранола<small>стакан</small></div>
-  <div class="lbl" style="left:280px;width:240px;top:514px">Чизбургер<small>1 штука</small></div>
+  <img class="ph" src="img/granola.webp" style="left:22px;top:376px;width:236px;height:236px">
+  <img class="ph" src="img/burger.webp" style="left:282px;top:376px;width:236px;height:236px">
+  <div class="or" style="left:227px;top:451px">или</div>
+  <div class="lbl" style="left:10px;width:260px;top:626px">Гранола<small>стакан</small></div>
+  <div class="lbl" style="left:270px;width:260px;top:626px">Чизбургер<small>1 штука</small></div>
   <div class="t2">Спорим, и 5 пар из 10<br><b>не угадаешь?</b></div>
-  <div class="cta">Проверь в игре 👇</div>
+  <div class="btn">Проверь в игре 👇</div>
 </div>
 <div class="v" id="b">
   <div class="eb">УГАДАЙ КАЛОРИИ · FOODHACKLAB</div>
