@@ -282,16 +282,16 @@ async function call(url,timeout){
 function api(kind,key){
   return queued(()=>call(`${STATS}/${kind}/${NS}/${key}`,6000)).catch(()=>null);
 }
-const YM_GOALS={subscribe:'subscribe',plays:'start',share:'challenge',tg:'telegram',story:'story','from-challenge':'from_challenge'};
+const YM_GOALS={subscribe:'subscribe',plays:'start',share:'challenge','tg-share':'telegram',story:'story','from-challenge':'from_challenge'};
 function ymFor(key){
   if (!window.ymGoal) return;
   if (YM_GOALS[key]) ymGoal(YM_GOALS[key]);
-  else if (/^s\d+$/.test(key)) ymGoal('finish',{score:+key.slice(1)});
+  else if (/^score-\d+$/.test(key)) ymGoal('finish',{score:+key.slice(6)});
   else if (/^miss-r\d+$/.test(key)) ymGoal('miss',{round:+key.slice(6)});
 }
 const hit = key => { ymFor(key); return api('hit',key); };
 async function percentile(my){
-  const vals=await Promise.all(Array.from({length:11},(_,i)=>api('get','s'+i)));
+  const vals=await Promise.all(Array.from({length:11},(_,i)=>api('get','score-'+i)));
   if (vals.some(v=>v===null)) return null;
   const total=vals.reduce((a,b)=>a+b,0); if (total<30) return null;
   const below=vals.slice(0,my).reduce((a,b)=>a+b,0);
@@ -385,7 +385,7 @@ function finish(){
   if (score>=8) setTimeout(()=>burst($('#r-num'),80),700);
   storyReady=null; setTimeout(()=>{ if(!storyReady) storyReady=buildStory(); },1300);
   const pr=$('#r-pct'); pr.hidden=true;
-  Promise.all([hit('done'),hit('s'+score)]).then(()=>percentile(score)).then(res=>{
+  Promise.all([hit('done'),hit('score-'+score)]).then(()=>percentile(score)).then(res=>{
     if (!res) return;
     pr.textContent = res.pct>=50 ? `Это лучше, чем у ${res.pct}% игроков` : res.pct>0 ? `Лучше, чем у ${res.pct}% игроков. Есть куда расти` : `Пока ниже всех. Реванш?`;
     pr.hidden=false;
@@ -483,7 +483,7 @@ $('#b-img').onclick=saveImage;
 $('#b-again').onclick=start;
 $('#story-x').onclick=closeStory; $('#story-share').onclick=shareStory;
 $('#story').addEventListener('click',e=>{ if(e.target.id==='story') closeStory(); });
-$('#b-tg').addEventListener('click',()=>hit('tg'));
+$('#b-tg').addEventListener('click',()=>hit('tg-share'));
 $('#b-sub').addEventListener('click',()=>hit('subscribe'));
 </script>
 </body>
