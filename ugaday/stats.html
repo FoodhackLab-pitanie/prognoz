@@ -46,7 +46,14 @@ a{color:var(--gold)}
 <script>
 const STATS='https://abacus.jasoncameron.dev', NS='foodhacklab-ugaday';
 const ROUND_NAMES=['Мёд / сахар','Сок / кола','Хлебцы / хлеб','Масло / банан','Орехи / шоколад','Арбуз / мороженое','Финики / кола','Семечки / батон','Авокадо / яйца','Пиво / грудка'];
-const get = key => fetch(`${STATS}/get/${NS}/${key}`,{cache:'no-store'}).then(r=>r.status===404?{value:0}:r.ok?r.json():Promise.reject(r.status)).then(j=>Number(j.value)||0);
+const get = key => {
+  const c=new AbortController(); const t=setTimeout(()=>c.abort(),8000);
+  return fetch(`${STATS}/get/${NS}/${key}`,{cache:'no-store',signal:c.signal})
+    .then(r=>r.status===404?{value:0}:r.ok?r.json():Promise.reject(new Error('сервис ответил кодом '+r.status)))
+    .then(j=>Number(j.value)||0)
+    .catch(e=>{ throw e.name==='AbortError'?new Error('сервис не ответил за 8 секунд'):e; })
+    .finally(()=>clearTimeout(t));
+};
 const fmt = n => n.toLocaleString('ru-RU');
 const pct = (a,b) => b ? Math.round(a/b*100)+'%' : '—';
 async function load(){
@@ -68,7 +75,7 @@ async function load(){
       `<div class="row"><span class="lbl">${i+1}. ${ROUND_NAMES[i]}</span><span class="bar red"><i style="width:${Math.min(100,n/base*100)}%"></i></span><span class="n">${pct(n,v.done)}</span></div>`).join('');
     document.getElementById('when').textContent='Обновлено: '+new Date().toLocaleString('ru-RU');
   }catch(e){
-    document.getElementById('when').innerHTML='<span class="err">Сервис счётчика не ответил. Попробуйте обновить через минуту.</span>';
+    document.getElementById('when').innerHTML='<span class="err">Счётчик не отвечает.</span><br><span class="muted">Причина: '+String(e&&e.message||e).replace(/[<>&]/g,'')+'<br>Время: '+new Date().toLocaleString('ru-RU')+'</span>';
   }
 }
 document.getElementById('reload').onclick=load; load();
