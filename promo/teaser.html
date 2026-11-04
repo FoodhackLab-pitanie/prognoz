@@ -36,10 +36,11 @@ html,body{width:540px;height:960px;overflow:hidden;background:#081028}
 .ring{position:absolute;inset:-8px;border-radius:50%}
 /* end */
 #end .logo{position:absolute;top:110px;left:50%;width:160px;height:160px;margin-left:-80px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px #E3AE76,0 20px 50px -10px rgba(0,0,0,.8)}
-#end .t1{position:absolute;top:300px;left:24px;right:24px;text-align:center;font:400 58px/1.05 Forum,serif}
+#end .t1{position:absolute;top:310px;left:24px;right:24px;text-align:center;font:400 70px/1.05 Forum,serif}
 #end .btn{position:absolute;top:620px;left:50px;right:50px;height:96px;border-radius:99px;display:grid;place-items:center;font:800 32px Manrope;color:#0A1330;
   background:linear-gradient(180deg,#F8E0BC,#E3AE76 55%,#B06D40);box-shadow:0 14px 40px -10px rgba(227,174,118,.7)}
-#end .arrow{position:absolute;top:732px;left:0;right:0;text-align:center;font-size:54px}
+#end .sub{position:absolute;top:730px;left:0;right:0;text-align:center;font:800 24px Manrope;color:#E9B983}
+#end .arrow{position:absolute;top:772px;left:0;right:0;text-align:center;font-size:54px}
 </style>
 </head>
 <body>
@@ -61,8 +62,9 @@ html,body{width:540px;height:960px;overflow:hidden;background:#081028}
 
   <div id="end" class="layer">
     <img class="logo" id="elogo" src="../ugaday/logo.webp">
-    <div class="t1 gold" id="et1">Проверь свой<br>уровень нутрициолога<br>в&nbsp;игре</div>
-    <div class="btn" id="ebtn">Ссылка под видео</div>
+    <div class="t1 gold" id="et1">Спорим, и&nbsp;5&nbsp;пар из&nbsp;10 не&nbsp;угадаешь?</div>
+    <div class="btn" id="ebtn">Проверь в игре</div>
+    <div class="sub" id="esub">ссылка под видео</div>
     <div class="arrow" id="earr">👇</div>
   </div>
 </div>
@@ -132,6 +134,7 @@ function render(t){
     show($('#elogo'),prog(et,0,0.3),0,backOut(prog(et,0,0.5)));
     show($('#et1'),prog(et,0.15,0.45),lerp(20,0,easeOut(prog(et,0.15,0.6))));
     show($('#ebtn'),prog(et,0.6,0.85),0,backOut(prog(et,0.6,1.0))*(1+0.035*Math.sin(Math.max(0,et-1.0)*6)));
+    show($('#esub'),prog(et,0.8,1.0));
     show($('#earr'),prog(et,0.9,1.1),Math.abs(Math.sin(Math.max(0,et-1.1)*4))*14);
   }
 }
