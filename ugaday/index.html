@@ -131,6 +131,13 @@ h2{font:800 clamp(22px,6.3vw,28px)/1.22 var(--f-body);letter-spacing:-.01em;marg
 .sheet img{width:100%;max-height:62dvh;object-fit:contain;border-radius:14px;-webkit-touch-callout:default;user-select:auto}
 .sheet .hint{margin:0;text-align:center;color:var(--muted);font-size:15px}
 .sheet .x{position:absolute;top:6px;right:8px;width:40px;height:40px;border:0;background:transparent;color:var(--gold1);font-size:30px;line-height:1;cursor:pointer;z-index:1}
+.sub-card{display:grid;grid-template-columns:auto 1fr;gap:12px 14px;align-items:center;text-decoration:none;color:var(--ink);padding:16px;border-radius:22px;
+  background:linear-gradient(135deg,rgba(42,171,238,.22),rgba(42,171,238,.06));border:1px solid rgba(42,171,238,.45)}
+.sub-ic{width:48px;height:48px;border-radius:50%;background:#2AABEE;display:grid;place-items:center}
+.sub-tx{display:grid;gap:3px;font-size:15.5px;line-height:1.35;color:var(--muted)}
+.sub-tx b{font-size:19px;color:var(--ink)}
+.sub-btn{grid-column:1/-1;text-align:center;font:800 17px/1 var(--f-body);padding:16px;border-radius:99px;background:#2AABEE;color:#fff}
+.sub-card:active{transform:scale(.98)}
 .src{font-size:13.5px;color:var(--muted);line-height:1.5;margin-top:auto;padding-top:8px}
 .src a{color:var(--gold)}
 @media (min-width:520px){.food{min-height:270px}}
@@ -185,7 +192,12 @@ h2{font:800 clamp(22px,6.3vw,28px)/1.22 var(--f-body);letter-spacing:-.01em;marg
     <div id="r-friend" class="vsfriend" hidden></div>
     <div class="actions">
       <button class="btn" id="b-challenge">Бросить вызов другу</button>
-      <a class="btn tg" id="b-tg" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Отправить в Telegram</a>
+      <a class="sub-card" id="b-sub" href="https://t.me/FoodHackLab" target="_blank" rel="noopener">
+        <span class="sub-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path fill="#fff" d="M21.6 4.2 2.9 11.4c-1.3.5-1.3 1.2-.2 1.6l4.8 1.5 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.8c.3-1.3-.5-1.9-1.4-1.5ZM8.4 14.1l9.5-6c.5-.3.9-.1.5.2l-8.1 7.3-.3 3.4-1.6-4.9Z"/></svg></span>
+        <span class="sub-tx"><b>Это была разминка</b><span>Дальше будет хитрее: новые пары с подвохом и разборы еды — в нашем Telegram-канале</span></span>
+        <span class="sub-btn">Подписаться</span>
+      </a>
+      <a class="btn ghost" id="b-tg" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Отправить в Telegram</a>
       <button class="btn ghost" id="b-img">Картинка для сторис</button>
       <button class="btn ghost" id="b-again">Сыграть ещё раз</button>
     </div>
@@ -254,7 +266,7 @@ function api(kind,key){
   return fetch(`${STATS}/${kind}/${NS}/${key}`,{signal:c.signal,cache:'no-store'})
     .then(r=>r.ok?r.json():{value:0}).then(j=>Number(j.value)||0).catch(()=>null).finally(()=>clearTimeout(t));
 }
-const YM_GOALS={plays:'start',share:'challenge',tg:'telegram',story:'story','from-challenge':'from_challenge'};
+const YM_GOALS={subscribe:'subscribe',plays:'start',share:'challenge',tg:'telegram',story:'story','from-challenge':'from_challenge'};
 function ymFor(key){
   if (!window.ymGoal) return;
   if (YM_GOALS[key]) ymGoal(YM_GOALS[key]);
@@ -456,6 +468,7 @@ $('#b-again').onclick=start;
 $('#story-x').onclick=closeStory; $('#story-share').onclick=shareStory;
 $('#story').addEventListener('click',e=>{ if(e.target.id==='story') closeStory(); });
 $('#b-tg').addEventListener('click',()=>hit('tg'));
+$('#b-sub').addEventListener('click',()=>hit('subscribe'));
 </script>
 </body>
 </html>
