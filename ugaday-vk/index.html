@@ -246,7 +246,7 @@ h1{font-size:clamp(28px,5.8dvh,44px)}
         <span class="sub-tx"><b>Дальше хитрее и вкуснее</b><span>Игры, разборы и шеф-бот с рецептами под тебя.</span></span>
         <span class="sub-btn">Подписаться ВКонтакте</span>
       </a>
-      <a class="btn ghost" id="b-tg" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Отправить в Telegram</a>
+      <button class="btn ghost" id="b-message">Отправить сообщением</button>
       <button class="btn ghost" id="b-img">Картинка для сторис</button>
       <button class="btn ghost" id="b-again">Сыграть ещё раз</button>
     </div>
@@ -308,7 +308,7 @@ const friend = (() => {
   return Number.isInteger(v) && v>=0 && v<=10 ? v : null;
 })();
 /* Счётчик: бесплатный сервис Abacus. Если он не отвечает, игра работает как обычно. */
-const STATS='https://abacus.jasoncameron.dev', NS='foodhacklab-ugaday';
+const STATS='https://abacus.jasoncameron.dev', NS='foodhacklab-ugaday-vk';
 const GAP=250;
 /* Запросы идут по одному: сервис отвечает 429, если слать много сразу. При 429 ждём и повторяем. */
 let qTail=Promise.resolve();
@@ -330,7 +330,7 @@ async function call(url,timeout){
 function api(kind,key){
   return queued(()=>call(`${STATS}/${kind}/${NS}/${key}`,6000)).catch(()=>null);
 }
-const YM_GOALS={subscribe:'subscribe',plays:'start',share:'challenge','tg-share':'telegram',story:'story','from-challenge':'from_challenge'};
+const YM_GOALS={subscribe:'subscribe',plays:'start',share:'challenge','message-share':'message_share',story:'story','from-challenge':'from_challenge'};
 function ymFor(key){
   if (!window.ymGoal) return;
   if (YM_GOALS[key]) ymGoal(YM_GOALS[key]);
@@ -424,7 +424,6 @@ function finish(){
       : score===friend ? `Ничья с другом: ${score} : ${friend}. Нужен реванш`
       : `Друг пока впереди: ${friend} против ${score}. Попробуешь ещё раз?`;
   } else f.hidden=true;
-  $('#b-tg').href = 'https://t.me/share/url?url='+encodeURIComponent(shareUrl())+'&text='+encodeURIComponent(shareText());
   const miss = ROUNDS.filter((_,i)=>!answers[i]);
   $('#misses').innerHTML = miss.length ? `<h3>Где тебя подловили</h3>` + miss.map(r=>{
     const [w,l]= r.a.k>r.b.k ? [r.a,r.b]:[r.b,r.a];
@@ -443,12 +442,14 @@ const shareUrl = () => `${URL_BASE}?r=${score}`;
 const rankOf = n => TITLES.find(([a,b])=>n>=a&&n<=b)[2];
 const shareText = () => `Мой уровень в «Угадай калории» — ${rankOf(score)} (${score} из 10). А какой нутрициолог ты?`;
 
-async function challenge(){
-  hit('share');
+async function challenge(){ return shareResult('share'); }
+async function shareMessage(){ return shareResult('message-share'); }
+async function shareResult(event){
+  hit(event);
   const data={title:'Угадай калории', text:shareText(), url:shareUrl()};
   try { if (navigator.share) { await navigator.share(data); return; } } catch(e){ if (e.name==='AbortError') return; }
   try { await navigator.clipboard.writeText(`${data.text} ${data.url}`); toast('Ссылка скопирована — отправь другу'); }
-  catch { prompt('Скопируй ссылку и отправь другу:', data.url); }
+  catch { prompt('Скопируй сообщение и отправь другу:', `${data.text} ${data.url}`); }
 }
 function toast(t){ const d=document.createElement('div'); d.className='toast'; d.textContent=t; document.body.append(d); setTimeout(()=>d.remove(),2400); }
 
@@ -477,7 +478,7 @@ async function storyImage(){
   const t=TITLES.find(([a,b])=>score>=a&&score<=b)[2];
   x.fillStyle=gold(1300,1400); x.font='400 84px Forum, Georgia, serif'; wrap(x,t,W/2,1380,860,92);
   x.fillStyle='#F3E8D8'; x.font='700 52px Manrope, sans-serif'; x.fillText('А ты сможешь лучше?',W/2,1610);
-  x.fillStyle='#E9B983'; x.font='600 34px Manrope, sans-serif'; x.fillText('foodhacklab-pitanie.github.io/prognoz/ugaday',W/2,1730);
+  x.fillStyle='#E9B983'; x.font='600 34px Manrope, sans-serif'; x.fillText('foodhacklab-pitanie.github.io/prognoz/ugaday-vk/',W/2,1730);
   return new Promise(r=>c.toBlob(r,'image/png'));
 }
 function roundRect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
@@ -532,7 +533,7 @@ $('#b-img').onclick=saveImage;
 $('#b-again').onclick=start;
 $('#story-x').onclick=closeStory; $('#story-share').onclick=shareStory;
 $('#story').addEventListener('click',e=>{ if(e.target.id==='story') closeStory(); });
-$('#b-tg').addEventListener('click',()=>hit('tg-share'));
+$('#b-message').addEventListener('click',shareMessage);
 $('#b-sub').addEventListener('click',()=>hit('subscribe'));
 </script>
 </body>
