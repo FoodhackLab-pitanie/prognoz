@@ -44,51 +44,61 @@ a{color:var(--gold)}
   <div><button id="reload">Обновить</button></div>
 </main>
 <script>
-const STATS='https://abacus.jasoncameron.dev', NS='foodhacklab-ugaday-vk';
+const NS='foodhacklab-ugaday-vk';
 const ROUND_NAMES=['Мёд / сахар','Сок / кола','Хлебцы / хлеб','Масло / банан','Орехи / шоколад','Арбуз / мороженое','Финики / кола','Семечки / батон','Авокадо / яйца','Пиво / грудка'];
-const GAP=250;
-/* Запросы идут по одному: сервис отвечает 429, если слать много сразу. При 429 ждём и повторяем. */
-let qTail=Promise.resolve();
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-function queued(fn){ const p=qTail.then(fn,fn); qTail=p.then(()=>sleep(GAP),()=>sleep(GAP)); return p; }
-async function call(url,timeout){
-  for (let attempt=0; ; attempt++){
-    const c=new AbortController(); const t=setTimeout(()=>c.abort(),timeout);
-    let r;
-    try { r=await fetch(url,{cache:'no-store',signal:c.signal}); }
-    catch(e){ throw e.name==='AbortError'?new Error('сервис не ответил за '+timeout/1000+' секунд'):e; }
-    finally { clearTimeout(t); }
-    if (r.status===429 && attempt<4){ const ra=+r.headers.get('Retry-After'); await sleep(ra>0?ra*1000:1000*2**attempt); continue; }
-    if (r.status===404) return 0;
-    if (!r.ok) throw new Error('сервис ответил кодом '+r.status);
-    const j=await r.json(); return Number(j.value)||0;
-  }
-}
-const get = key => queued(()=>call(`${STATS}/get/${NS}/${key}`,8000));
-const fmt = n => n.toLocaleString('ru-RU');
-const pct = (a,b) => b ? Math.round(a/b*100)+'%' : '—';
-async function load(){
-  document.getElementById('when').textContent='Загружаю…';
-  try{
-    const keys=['plays','done','share','message-share','story','from-challenge','subscribe',...Array.from({length:11},(_,i)=>'score-'+i),...Array.from({length:10},(_,i)=>'miss-r'+(i+1))];
-    let done=0; const vals=await Promise.all(keys.map(k=>get(k).then(v=>{ document.getElementById('when').textContent=`Загружаю… ${++done} из ${keys.length}`; return v; }))); const v=Object.fromEntries(keys.map((k,i)=>[k,vals[i]]));
+const KEYS=['plays','done','share','message-share','story','from-challenge','subscribe',...Array.from({length:11},(_,i)=>'score-'+i),...Array.from({length:10},(_,i)=>'miss-r'+(i+1))];
+const known = n => typeof n==='number' && Number.isFinite(n) && n>=0;
+const sum = ns => ns.every(known) ? ns.reduce((a,b)=>a+b,0) : null;
+const fmt = n => known(n) ? n.toLocaleString('ru-RU') : '—';
+const pct = (a,b) => known(a) && known(b) && b>0 ? Math.round(a/b*100)+'%' : '—';
+const CACHE='foodhacklab-ugaday-vk-stats-snapshot-v1';
+let lastData=null;
+function render(data){
+    const v=Object.fromEntries(KEYS.map(k=>[k,known(data?.values?.[k])?data.values[k]:null]));
     document.getElementById('tiles').innerHTML=[
       [v.plays,'начали игру'],[v.done,`дошли до конца (${pct(v.done,v.plays)})`],
-      [v.share+v['message-share'],'нажали «вызов» или «Отправить сообщением»'],[v.story,'сохранили картинку для сторис'],
+      [sum([v.share,v['message-share']]),'нажали «вызов» или «Отправить сообщением»'],[v.story,'сохранили картинку для сторис'],
       [v['from-challenge'],'пришли по ссылке-вызову'],[v.subscribe,`нажали «Подписаться ВКонтакте» (${pct(v.subscribe,v.done)} от доигравших)`],
     ].map(([n,t])=>`<div class="tile"><b>${fmt(n)}</b><span>${t}</span></div>`).join('');
-    const sc=Array.from({length:11},(_,i)=>v['score-'+i]), smax=Math.max(1,...sc), stot=sc.reduce((a,b)=>a+b,0);
+    const sc=Array.from({length:11},(_,i)=>v['score-'+i]), smax=Math.max(1,...sc.filter(known)), stot=sum(sc);
     const avg = stot ? (sc.reduce((a,n,i)=>a+n*i,0)/stot).toFixed(1).replace('.',',') : '—';
     document.getElementById('scores').innerHTML=`<p class="muted" style="margin-bottom:8px">Средний счёт: ${avg} из 10</p>`+
-      sc.map((n,i)=>`<div class="row"><span class="lbl">${i} из 10</span><span class="bar"><i style="width:${n/smax*100}%"></i></span><span class="n">${fmt(n)}</span></div>`).join('');
-    const ms=Array.from({length:10},(_,i)=>v['miss-r'+(i+1)]), base=Math.max(1,v.done);
-    document.getElementById('misses').innerHTML=ms.map((n,i)=>({n,i})).sort((a,b)=>b.n-a.n).map(({n,i})=>
-      `<div class="row"><span class="lbl">${i+1}. ${ROUND_NAMES[i]}</span><span class="bar red"><i style="width:${Math.min(100,n/base*100)}%"></i></span><span class="n">${pct(n,v.done)}</span></div>`).join('');
-    document.getElementById('when').textContent='Обновлено: '+new Date().toLocaleString('ru-RU');
-  }catch(e){
-    document.getElementById('when').innerHTML='<span class="err">Счётчик не отвечает.</span><br><span class="muted">Причина: '+String(e&&e.message||e).replace(/[<>&]/g,'')+'<br>Время: '+new Date().toLocaleString('ru-RU')+'</span>';
-  }
+      sc.map((n,i)=>`<div class="row"><span class="lbl">${i} из 10</span><span class="bar"><i style="width:${(known(n)?n/smax*100:0)}%"></i></span><span class="n">${fmt(n)}</span></div>`).join('');
+    const ms=Array.from({length:10},(_,i)=>v['miss-r'+(i+1)]), base=Math.max(1,v.done||0);
+    document.getElementById('misses').innerHTML=ms.map((n,i)=>({n,i})).sort((a,b)=>(b.n??-1)-(a.n??-1)).map(({n,i})=>
+      `<div class="row"><span class="lbl">${i+1}. ${ROUND_NAMES[i]}</span><span class="bar red"><i style="width:${(known(n)?Math.min(100,n/base*100):0)}%"></i></span><span class="n">${pct(n,v.done)}</span></div>`).join('');
 }
+function showDate(data){
+  const date=new Date(data.updatedAt);
+  const old=Date.now()-date.getTime()>60*60*1000;
+  const incomplete=KEYS.some(k=>!known(data.values[k])) || data.failed?.length;
+  document.getElementById('when').textContent='Данные на '+date.toLocaleString('ru-RU')+'. '+
+    (old?'Обновление задерживается; показаны последние доступные данные.':incomplete?'Часть показателей пока не обновилась.':'Обновляются автоматически примерно раз в 15 минут.');
+}
+async function load(){
+  const button=document.getElementById('reload');
+  if(button.disabled)return;
+  button.disabled=true;
+  if(!lastData) document.getElementById('when').textContent='Загружаю статистику…';
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),10000);
+  try{
+    const response=await fetch('./stats-data.json',{cache:'no-store',signal:controller.signal});
+    if(!response.ok) throw new Error('Snapshot unavailable');
+    const data=await response.json();
+    if(data.namespace!==NS || !data.values || !Number.isFinite(Date.parse(data.updatedAt))) throw new Error('Invalid snapshot');
+    lastData=data;render(data);showDate(data);
+    try{localStorage.setItem(CACHE,JSON.stringify(data));}catch{}
+  }catch{
+    if(lastData){
+      showDate(lastData);
+      document.getElementById('when').textContent+=' Нет связи с сайтом: сохранённые показатели остаются на экране.';
+    }else{
+      document.getElementById('when').textContent='Не удалось загрузить статистику с сайта. Нажмите «Обновить», когда появится связь. Прочерки означают отсутствие данных, а не нулевые показатели.';
+    }
+  }finally{clearTimeout(timer);button.disabled=false;}
+}
+try{const cached=JSON.parse(localStorage.getItem(CACHE));if(cached?.namespace===NS && cached.values && Number.isFinite(Date.parse(cached.updatedAt))){lastData=cached;render(cached);showDate(cached);}}catch{}
+if(!lastData)render(null);
 document.getElementById('reload').onclick=load; load();
 </script>
 </body>
